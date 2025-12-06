@@ -6,6 +6,33 @@ import { TREATMENT_OPTIONS } from '../constants';
 import { Bot, ClipboardList, ArrowLeft, Save, History, TrendingUp, Calendar, Activity, BookOpenCheck, Loader2, User, Zap, Heart, MessageCircle, Brain, AlertTriangle, ThumbsUp, Send, Stethoscope, X, MessageSquare, AlertCircle, FileText, HeartPulse } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
+// 하드코딩된 데모 환자 데이터 (의료진 리포트용)
+const STATIC_REPORT_DATA: UserData = {
+    name: '김00',
+    age: '47',
+    gender: 'female',
+    vasScore: 5,
+    currentSymptoms: '왼손목이 화끈거리고 차가운 물에 닿으면 통증이 심해집니다.',
+    durationMonths: 1,
+    mainSymptoms: ['화끈거리는 통증', '차가움 과민'],
+    painLocation: ['왼손목', '손등'],
+    history: [],
+    statusLogs: [
+        {
+            id: 'static-log-1',
+            date: new Date().toLocaleDateString(),
+            time: '09:00',
+            vasScore: 5,
+            symptoms: '아침에 손목이 타는 느낌, 손등은 얼음에 닿는 듯한 느낌',
+            painLocation: ['왼손목', '손등'],
+        },
+    ],
+    crpsType: 'TYPE_1',
+    wantsEmotionalSupport: true,
+    knowledgeLevel: 'MEDIUM',
+    medicalCommunicationSatisfied: false,
+};
+
 interface AnalysisData {
     welcomeMsg: string;
     questions: string[];
@@ -24,10 +51,15 @@ interface Props {
 }
 
 const DecisionTalk: React.FC<Props> = ({ userData, preferences, record, currentAnalysis, onBack, onSave, onHistoryClick, onAnalysisGenerated, isMedicalView = false }) => {
-  const [welcomeMsg, setWelcomeMsg] = useState("환자정보의 요약을 불러오는 중입니다...");
+  const [welcomeMsg, setWelcomeMsg] = useState("Decision-helper가 리포트를 준비하고 있습니다...");
   const [questions, setQuestions] = useState<string[]>([]);
   const [loadingQuestions, setLoadingQuestions] = useState(true);
   const [forceGenerate, setForceGenerate] = useState(false);
+
+  // 의료진 모드에서는 하드코딩된 리포트 데이터를 사용해 화면을 구성한다.
+  const displayUser = isMedicalView ? STATIC_REPORT_DATA : userData;
+  const displayLogs = isMedicalView ? STATIC_REPORT_DATA.statusLogs : userData.statusLogs;
+  const displayHistory = isMedicalView ? STATIC_REPORT_DATA.history : userData.history;
   
   // Chat State
   const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([]);
@@ -38,7 +70,7 @@ const DecisionTalk: React.FC<Props> = ({ userData, preferences, record, currentA
 
   const isHistoryView = !!record;
   const hasPreferences = preferences && preferences.length > 0;
-  const hasLogs = userData.statusLogs && userData.statusLogs.length > 0;
+  const hasLogs = displayLogs && displayLogs.length > 0;
   const hasEnoughData = hasPreferences || hasLogs;
   const showEmptyState = !isHistoryView && !currentAnalysis && !isMedicalView && !hasEnoughData && !forceGenerate;
 
@@ -69,17 +101,17 @@ const DecisionTalk: React.FC<Props> = ({ userData, preferences, record, currentA
 
       } else {
           try {
-            const msg = await generatePersonaMessage('decision', userData);
+            const msg = await generatePersonaMessage('decision', displayUser);
             setWelcomeMsg(msg);
             
-            const qs = await generateSmartQuestions(userData, preferences);
+            const qs = await generateSmartQuestions(displayUser, preferences);
             setQuestions(qs);
             setLoadingQuestions(false);
             
             if (!isMedicalView) {
-                 setChatMessages([{ role: 'assistant', content: "분석을 마쳤습니다. 더 궁금한 점이 있으시면 편하게 물어봐주세요." }]);
+                 setChatMessages([{ role: 'assistant', content: "분석을 완료했습니다. 궁금한 점이 있으면 편하게 물어보세요." }]);
             } else {
-                 setChatMessages([{ role: 'assistant', content: "의료진 모드입니다. 환자의 데이터를 기반으로 답변해드립니다." }]);
+                 setChatMessages([{ role: 'assistant', content: "환자요약 정보입니다. 환자 리포트를 기반으로 답변해드릴게요." }]);
             }
             
             onAnalysisGenerated({ welcomeMsg: msg, questions: qs });
@@ -92,7 +124,7 @@ const DecisionTalk: React.FC<Props> = ({ userData, preferences, record, currentA
     };
 
     init();
-  }, [userData.vasScore, userData.history.length, isHistoryView, record?.id, currentAnalysis, showEmptyState]);
+  }, [displayUser.vasScore, displayUser.history.length, isHistoryView, record?.id, currentAnalysis, showEmptyState]);
 
   useEffect(() => {
       modalChatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -109,12 +141,12 @@ const DecisionTalk: React.FC<Props> = ({ userData, preferences, record, currentA
       setChatMessages(newHistory);
       setIsTyping(true);
 
-      const response = await chatWithDecisionPersona(userData, newHistory, userMsg, isMedicalView);
+      const response = await chatWithDecisionPersona(displayUser, newHistory, userMsg, isMedicalView);
       setChatMessages(prev => [...prev, { role: 'assistant', content: response }]);
       setIsTyping(false);
   };
 
-  const chartData = (userData.statusLogs || [])
+  const chartData = (displayLogs || [])
     .sort((a, b) => new Date(`${a.date} ${a.time}`).getTime() - new Date(`${b.date} ${b.time}`).getTime())
     .map(log => ({
         fullDate: `${log.date} ${log.time}`,
@@ -123,22 +155,22 @@ const DecisionTalk: React.FC<Props> = ({ userData, preferences, record, currentA
         vas: log.vasScore
     }));
   
-  if (chartData.length === 0 && userData.history.length > 0) {
-      userData.history.forEach(h => {
+  if (chartData.length === 0 && displayHistory.length > 0) {
+      displayHistory.forEach(h => {
           chartData.push({ fullDate: h.date, displayDate: h.date.slice(5), time: '', vas: h.vasScore });
       });
   }
 
   const todayStr = new Date().toLocaleDateString();
-  const todayLogs = (userData.statusLogs || []).filter(l => l.date === todayStr);
-  let todayVasDisplay = userData.vasScore;
+  const todayLogs = (displayLogs || []).filter(l => l.date === todayStr);
+  let todayVasDisplay = displayUser.vasScore;
   if (todayLogs.length > 0) {
       const sum = todayLogs.reduce((acc, curr) => acc + curr.vasScore, 0);
       todayVasDisplay = parseFloat((sum / todayLogs.length).toFixed(1));
   }
 
   const allPainLocs = Array.from(new Set(todayLogs.flatMap(l => l.painLocation)));
-  const displayPainLoc = allPainLocs.length > 0 ? allPainLocs.join(', ') : (userData.painLocation?.join(', ') || '정보 없음');
+  const displayPainLoc = allPainLocs.length > 0 ? allPainLocs.join(', ') : (displayUser.painLocation?.join(', ') || '정보 없음');
   const todayComments = todayLogs.filter(l => l.symptoms).map(l => ({ time: l.time, text: l.symptoms }));
 
   const getTypeName = (type: string) => {
@@ -201,13 +233,13 @@ const DecisionTalk: React.FC<Props> = ({ userData, preferences, record, currentA
          </div>
         <div className="z-10 flex-1 w-full">
             <h1 className="text-lg md:text-2xl font-bold mb-1 md:mb-2">
-                {isHistoryView ? `${record?.date} 진료 기록` : isMedicalView ? '환자 진료 리포트' : '현재 상태 요약'}
+                {isHistoryView ? `${record?.date} 진료 기록` : isMedicalView ? '환자 리포트' : '현재 상태 요약'}
             </h1>
             {!isMedicalView && (
                 <p className="text-indigo-100 text-xs md:text-sm leading-relaxed opacity-95">{welcomeMsg}</p>
             )}
             {isMedicalView && (
-                <p className="text-teal-50 text-xs md:text-sm opacity-95">환자 데이터를 기반으로 분석된 리포트입니다.</p>
+                <p className="text-teal-50 text-xs md:text-sm opacity-95">환자 리포트를 기반으로 Decision helper가 안내합니다.</p>
             )}
          </div>
          
@@ -217,7 +249,7 @@ const DecisionTalk: React.FC<Props> = ({ userData, preferences, record, currentA
                 className={`z-10 flex items-center gap-2 bg-white ${themeText} px-5 py-3 md:px-6 md:py-4 rounded-xl font-bold shadow-lg transition-all hover:scale-105 w-full md:w-auto justify-center text-sm md:text-base ${isMedicalView ? 'hover:bg-teal-50' : 'hover:bg-indigo-50'}`}
              >
                  <MessageCircle size={18} />
-                 {isMedicalView ? "Decision-helper와 대화하기" : "Decision-helper와 대화하기"}
+                 {isMedicalView ? "환자정보 요약" : "Decision-helper와 대화하기"}
              </button>
          )}
       </div>
@@ -233,15 +265,15 @@ const DecisionTalk: React.FC<Props> = ({ userData, preferences, record, currentA
                   <div className="flex flex-wrap gap-2 md:gap-3 mb-4 border-b border-slate-50 pb-4">
                       <div className="bg-slate-50 px-3 py-2 rounded-xl border border-slate-100 flex items-center gap-2 text-sm">
                           <span className="text-slate-500 text-xs">이름</span>
-                          <span className="font-bold text-slate-700">{userData.name}</span>
+                          <span className="font-bold text-slate-700">{displayUser.name}</span>
                       </div>
                       <div className="bg-slate-50 px-3 py-2 rounded-xl border border-slate-100 flex items-center gap-2 text-sm">
                           <span className="text-slate-500 text-xs">투병 기간</span>
-                          <span className="font-bold text-slate-700">{userData.durationMonths}개월</span>
+                          <span className="font-bold text-slate-700">{displayUser.durationMonths}개월</span>
                       </div>
                        <div className="bg-slate-50 px-3 py-2 rounded-xl border border-slate-100 flex items-center gap-2 text-sm">
                           <Activity size={14} className="text-blue-500"/>
-                          <span className="font-bold text-slate-700">{getTypeName(userData.crpsType)}</span>
+                          <span className="font-bold text-slate-700">{getTypeName(displayUser.crpsType)}</span>
                       </div>
                   </div>
 
@@ -251,8 +283,8 @@ const DecisionTalk: React.FC<Props> = ({ userData, preferences, record, currentA
                               <Brain size={12}/> 지식 수준
                           </span>
                           <span className="font-bold text-slate-700 text-xs md:text-sm">
-                              {userData.knowledgeLevel === 'HIGH' ? '높음 (전문 용어)' : 
-                               userData.knowledgeLevel === 'LOW' ? '낮음 (쉬운 설명)' : '보통'}
+                              {displayUser.knowledgeLevel === 'HIGH' ? '높음 (전문 용어)' : 
+                               displayUser.knowledgeLevel === 'LOW' ? '낮음 (쉬운 설명)' : '보통'}
                           </span>
                       </div>
                       <div className="flex flex-col gap-1 p-3 bg-pink-50 rounded-xl border border-pink-100">
@@ -260,7 +292,7 @@ const DecisionTalk: React.FC<Props> = ({ userData, preferences, record, currentA
                               <Heart size={12}/> 정서적 지지
                           </span>
                           <span className="font-bold text-slate-700 text-xs md:text-sm">
-                              {userData.wantsEmotionalSupport ? '필요함 (위로 중심)' : '정보 전달 중심'}
+                              {displayUser.wantsEmotionalSupport ? '필요함 (위로 중심)' : '정보 전달 중심'}
                           </span>
                       </div>
                   </div>
@@ -391,7 +423,7 @@ const DecisionTalk: React.FC<Props> = ({ userData, preferences, record, currentA
               <MessageCircle className={themeText} /> 
               {isMedicalView 
                 ? '환자 상담 시 참고할 질문 목록입니다'
-                : (userData.medicalCommunicationSatisfied ? '의료진에게 이렇게 질문해보세요' : '진료실에서 당황하지 않게 준비했어요')}
+                : (displayUser.medicalCommunicationSatisfied ? '의료진에게 이렇게 질문해보세요' : '진료실에서 당황하지 않게 준비했어요')}
           </h3>
           
           {loadingQuestions ? (
@@ -431,11 +463,11 @@ const DecisionTalk: React.FC<Props> = ({ userData, preferences, record, currentA
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
               <History size={14}/> 과거 진료 기록 타임라인
           </h3>
-          {userData.history.length === 0 ? (
+          {displayHistory.length === 0 ? (
               <p className="text-slate-400 text-xs md:text-sm">아직 저장된 진료 기록이 없습니다.</p>
           ) : (
               <div className="flex gap-3 md:gap-4 overflow-x-auto pb-4 custom-scrollbar">
-                  {userData.history.map((h) => (
+                  {displayHistory.map((h) => (
                       <button 
                           key={h.id}
                           onClick={() => onHistoryClick(h)}
