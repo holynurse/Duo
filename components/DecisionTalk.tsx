@@ -249,7 +249,7 @@ const DecisionTalk: React.FC<Props> = ({ userData, preferences, record, currentA
                 className={`z-10 flex items-center gap-2 bg-white ${themeText} px-5 py-3 md:px-6 md:py-4 rounded-xl font-bold shadow-lg transition-all hover:scale-105 w-full md:w-auto justify-center text-sm md:text-base ${isMedicalView ? 'hover:bg-teal-50' : 'hover:bg-indigo-50'}`}
              >
                  <MessageCircle size={18} />
-                 {isMedicalView ? "환자정보 요약" : "Decision-helper와 대화하기"}
+                 {isMedicalView ? "Decision-helper와 대화하기" : "Decision-helper와 대화하기"}
              </button>
          )}
       </div>
