@@ -44,8 +44,8 @@ export const generatePersonaMessage = async (
 
     let prompt = "";
     if (stage === 'intro') {
-      const representativeProfile = CRPS_PROFILES[0]; // 예시로 첫 번째 프로필 사용
-      const representativeInsight = CRPS_INSIGHT_NEEDS[0]; // 예시로 첫 번째 인사이트 사용
+      const representativeProfile = CRPS_PROFILES[0]; 
+      const representativeInsight = CRPS_INSIGHT_NEEDS[0]; 
       const urlListText = RAG_URL_LIST.join('\n');
       const faqListText = FAQ_LIST.map(cat => `- ${cat.category}: ${cat.items.map(item => item.q).join(', ')}`).join('\n');
 
@@ -136,7 +136,7 @@ export const analyzeUserProfile = async (userData: UserData): Promise<string> =>
         const toneInstructions = getToneInstructions(userData);
 
         const prompt = `
-        CRPS 환자 데이터가 입력되었습니다. 이 데이터를 바탕으로 환자의 상태를 요약하고, 앞으로의 치료 방향성을 제시하는 '분석 리포트'를 'Decision-helper'의 입장에서 3~4문장으로 작성해주세요.
+        CRPS 환자 데이터가 입력되었습니다. 이 데이터를 바탕으로 환자의 상태를 요약하고, 앞으로의 치료 방향성을 제시하는 '분석 리포트'를 'Decision-helper'의 입장에서 3~4문장으로 작성해주세요. 당신은 환자의 상태를 깊이 이해하고, 환자가 스스로의 상태를 인지하고 파트너로서 의사결정할 수 있도록 돕는 역할을 합니다. 환자가 입력한 구체적인 증상 내용("${userData.currentSymptoms}")과 통증 양상(${painLoc}, ${userData.vasScore},${trendText})를 반드시 언급하며 분석에 포함하세요. 통증 점수가 낮아졌다면 안심시켜주고, 높아졌다면 대안책을 제시하고 격려해주세요.
         
         데이터:
         - 이름: ${userData.name}
@@ -186,7 +186,7 @@ export const fetchFAQAnswer = async (question: string): Promise<{ text: string, 
             contents: `CRPS 환자가 다음 질문을 했습니다: "${question}"
             
             지침:
-            1. 의학적으로 정확하고 최신 정보를 바탕으로 한국어로 답변하세요.
+            1. 의학적으로 정확하고 최신 정보를 바탕으로 한국어로 답변하세요. 당신은 공유의사결정을 위한 SDM단계에서 Team talk과 Option talk을 담당하므로 환자와 같은 팀으로서 정보를 찾아야 하고, 또한 환자가 선택할 수 있는 옵션의 장,단점과 선호도를 고려할 수 있도록 정보를 제공하면 좋습니다.
             2. **다음 URL 목록을 최우선 정보 소스로 활용하세요:**
                ${urlListText}
             3. 환자가 이해하기 쉽게 설명하되, 전문성을 잃지 마세요.
