@@ -16,7 +16,9 @@ interface AnalysisData {
     questions: string[];
 }
 
-const DEMO_PATIENTS: UserData[] = [
+
+// 의료진 모드에서 사용할 데모 환자(풍부한 로그/히스토리 포함)
+const ENRICHED_DEMO_PATIENTS: UserData[] = [
   {
     ...INITIAL_USER_DATA,
     name: '김하늘',
@@ -24,13 +26,31 @@ const DEMO_PATIENTS: UserData[] = [
     gender: 'female',
     vasScore: 6,
     durationMonths: 23,
-    currentSymptoms: '야간 통증과 부종 지속, 수면 곤란',
-    mainSymptoms: ['타는 듯한 통증', '부종'],
-    painLocation: ['왼쪽 다리'],
+    currentSymptoms: '왼쪽 발목 열감과 부종, 계단 오를 때 찌릿한 통증',
+    mainSymptoms: ['열감·부종', '야간 통증'],
+    painLocation: ['왼쪽 발목', '종아리'],
     crpsType: 'TYPE_1',
     wantsEmotionalSupport: true,
     knowledgeLevel: 'MEDIUM',
     medicalCommunicationSatisfied: false,
+    statusLogs: [
+      { id: 'h1-log-1', date: '2025-02-20', time: '08:30', vasScore: 6, symptoms: '밤새 열감, 종아리 당김', painLocation: ['왼쪽 발목'] },
+      { id: 'h1-log-2', date: '2025-02-20', time: '20:10', vasScore: 7, symptoms: '계단 오를 때 찌릿, 부종 증가', painLocation: ['왼쪽 발목', '종아리'] },
+      { id: 'h1-log-3', date: '2025-02-21', time: '09:00', vasScore: 5, symptoms: '아침에는 약간 완화', painLocation: ['왼쪽 발목'] },
+      { id: 'h1-log-4', date: '2025-02-22', time: '14:00', vasScore: 6, symptoms: '외출 후 붓기 재발', painLocation: ['왼쪽 발목', '종아리'] },
+      { id: 'h1-log-5', date: '2025-02-23', time: '21:00', vasScore: 6, symptoms: '야간 열감과 당김', painLocation: ['왼쪽 발목'] },
+    ],
+    history: [
+      {
+        id: 'h1-rec-1',
+        date: '2025-02-10',
+        vasScore: 6.5,
+        selectedTreatmentIds: ['t1', 't2'],
+        customTreatments: [],
+        generatedQuestions: ['최근 부종이 심해진 시간대가 있나요?', '계단 오르내릴 때 통증 악화 여부를 더 알려주세요.'],
+        memo: '열감/부종이 심해짐, 야간 통증으로 수면 방해',
+      },
+    ],
   },
   {
     ...INITIAL_USER_DATA,
@@ -39,28 +59,62 @@ const DEMO_PATIENTS: UserData[] = [
     gender: 'male',
     vasScore: 4,
     durationMonths: 14,
-    currentSymptoms: '작업 후 따끔거림, 간헐적 저림',
-    mainSymptoms: ['저림', '작열감'],
-    painLocation: ['오른쪽 팔'],
+    currentSymptoms: '작업 후 저린감과 화끈거림, 손끝 감각 저하',
+    mainSymptoms: ['저림', '신경통', '감각 둔화'],
+    painLocation: ['오른손', '팔꿈치'],
     crpsType: 'TYPE_2',
     wantsEmotionalSupport: false,
     knowledgeLevel: 'HIGH',
     medicalCommunicationSatisfied: true,
+    statusLogs: [
+      { id: 'h2-log-1', date: '2025-02-19', time: '10:00', vasScore: 4, symptoms: '오전 타이핑 후 저림', painLocation: ['오른손'] },
+      { id: 'h2-log-2', date: '2025-02-20', time: '15:30', vasScore: 5, symptoms: '장시간 운전 후 화끈거림', painLocation: ['오른손', '팔꿈치'] },
+      { id: 'h2-log-3', date: '2025-02-21', time: '09:30', vasScore: 3, symptoms: '밤 휴식 후 완화', painLocation: ['오른손'] },
+      { id: 'h2-log-4', date: '2025-02-22', time: '19:00', vasScore: 4, symptoms: '저녁 무렵 경미한 당김', painLocation: ['오른손'] },
+    ],
+    history: [
+      {
+        id: 'h2-rec-1',
+        date: '2025-02-08',
+        vasScore: 4.2,
+        selectedTreatmentIds: ['t5'],
+        customTreatments: [],
+        generatedQuestions: ['작업-통증 관계를 기록한 시간대가 있나요?', '진통제 복용 시 체감 변화는 어떠셨나요?'],
+        memo: '신경차단술 이후 일시적 완화, 업무 패턴과 연관 의심',
+      },
+    ],
   },
   {
     ...INITIAL_USER_DATA,
-    name: '박민지',
+    name: '박서연',
     age: '31',
     gender: 'female',
     vasScore: 7,
     durationMonths: 8,
-    currentSymptoms: '통증 급상승, 감각 과민',
-    mainSymptoms: ['감각 과민', '냉감'],
-    painLocation: ['양쪽 손'],
+    currentSymptoms: '통증 급상승과 감각 과민, 손등 접촉 시 번개 통증',
+    mainSymptoms: ['감각 과민', '촉각 통증', '야간 불면'],
+    painLocation: ['왼손 등', '손가락'],
     crpsType: 'UNKNOWN',
     wantsEmotionalSupport: true,
     knowledgeLevel: 'LOW',
     medicalCommunicationSatisfied: false,
+    statusLogs: [
+      { id: 'h3-log-1', date: '2025-02-18', time: '08:10', vasScore: 7, symptoms: '아침에도 번개 통증', painLocation: ['왼손 등'] },
+      { id: 'h3-log-2', date: '2025-02-19', time: '22:00', vasScore: 8, symptoms: '야간 통증으로 수면 중 깸', painLocation: ['왼손 등', '손가락'] },
+      { id: 'h3-log-3', date: '2025-02-21', time: '11:30', vasScore: 6, symptoms: '온열팩 후 약간 완화', painLocation: ['왼손 등'] },
+      { id: 'h3-log-4', date: '2025-02-22', time: '17:30', vasScore: 7, symptoms: '장보기 중 접촉 시 과민', painLocation: ['왼손 등', '손가락'] },
+    ],
+    history: [
+      {
+        id: 'h3-rec-1',
+        date: '2025-02-12',
+        vasScore: 7.5,
+        selectedTreatmentIds: ['t9', 't7'],
+        customTreatments: ['온열 요법'],
+        generatedQuestions: ['감각 과민이 심해지는 환경(온도/소음)이 있나요?', '수면의 질과 통증 패턴의 상관을 더 알려주세요.'],
+        memo: '야간 통증 심해 수면 방해, 온열팩 후 일시 완화',
+      },
+    ],
   },
 ];
 
@@ -204,8 +258,27 @@ const App = () => {
   
   // Medical: Select patient from list
   const handleMedicalSelectPatient = (patient: UserData) => {
-      // In a real app, we would load the selected patient.
-      // Here we just use the local userData as there is only one user.
+      const clonedPatient: UserData = {
+          ...patient,
+          mainSymptoms: [...(patient.mainSymptoms || [])],
+          painLocation: [...(patient.painLocation || [])],
+          statusLogs: (patient.statusLogs || []).map(log => ({
+              ...log,
+              painLocation: [...(log.painLocation || [])],
+          })),
+          history: (patient.history || []).map(rec => ({
+              ...rec,
+              selectedTreatmentIds: [...rec.selectedTreatmentIds],
+              customTreatments: rec.customTreatments ? [...rec.customTreatments] : undefined,
+              generatedQuestions: [...rec.generatedQuestions],
+              chatHistory: rec.chatHistory ? [...rec.chatHistory] : undefined,
+          })),
+      };
+
+      setUserData(clonedPatient);
+      setPreferences([]);
+      setSelectedRecord(null);
+      setCurrentAnalysis(null);
       setView(ViewState.DECISION_TALK);
   };
 
@@ -508,7 +581,7 @@ const App = () => {
         )}
         {view === ViewState.MEDICAL_HOME && (
             <MedicalDashboard 
-                patients={[...DEMO_PATIENTS]} // Demo용: 샘플 환자 3명만 표시
+                patients={[...ENRICHED_DEMO_PATIENTS]} // Demo용: 샘플 환자 3명만 표시
                 onSelectPatient={handleMedicalSelectPatient}
                 onStart={handleStart} // Added
                 onExplore={handleExplore} // Added
