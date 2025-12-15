@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { TREATMENT_OPTIONS, CRPS_TYPE_INFO } from '../constants';
+import { TREATMENT_OPTIONS_BY_TYPE, CRPS_TYPE_INFO } from '../constants';
 import { FAQ_LIST } from '../sources/customData';
 import { fetchFAQAnswer, analyzeTreatmentRealtime } from '@/services/geminiService';
 import { Preference, TreatmentOption, UserData } from '../types';
@@ -138,16 +138,12 @@ const OptionTalk: React.FC<Props> = ({ userData, initialPreferences, onBack, onN
 
   const getPreferenceStatus = (id: string) => preferences.find(p => p.treatmentId === id);
 
-  const sortedTreatments = [...TREATMENT_OPTIONS].sort((a, b) => {
-    const targetType = activeType;
-    const aRec = a.recommendedTypes.includes(targetType);
-    const bRec = b.recommendedTypes.includes(targetType);
-    if (aRec && !bRec) return -1;
-    if (!aRec && bRec) return 1;
-    if (a.evidenceLevel === 'High' && b.evidenceLevel !== 'High') return -1;
-    if (a.evidenceLevel !== 'High' && b.evidenceLevel === 'High') return 1;
-    return 0;
-  });
+const treatmentsForType = TREATMENT_OPTIONS_BY_TYPE[activeType] ?? [];
+const sortedTreatments = [...treatmentsForType].sort((a, b) => {
+  if (a.evidenceLevel === 'High' && b.evidenceLevel !== 'High') return -1;
+  if (a.evidenceLevel !== 'High' && b.evidenceLevel === 'High') return 1;
+  return 0;
+});
 
   return (
     <div className="space-y-4 md:space-y-6 animate-fade-in relative max-w-5xl mx-auto">
@@ -606,7 +602,7 @@ const OptionTalk: React.FC<Props> = ({ userData, initialPreferences, onBack, onN
             <p className="text-sm text-slate-500 mb-4">해당되는 이유를 모두 선택해주세요.</p>
             
             <ReasonSelector 
-              options={getReasonOptions(activeReasonModal.type, TREATMENT_OPTIONS.find(t => t.id === activeReasonModal.id))}
+              options={getReasonOptions(activeReasonModal.type, TREATMENT_OPTIONS_BY_TYPE[activeType]?.find(t => t.id === activeReasonModal.id))}
               onConfirm={confirmPreference}
               onCancel={() => {
                   setActiveReasonModal(null);
