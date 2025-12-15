@@ -52,9 +52,9 @@ const ENRICHED_DEMO_PATIENTS: (UserData & { demoPreferences?: Preference[] })[] 
       },
     ],
     demoPreferences: [
-      { treatmentId: 't1', type: 'LIKE', reasons: ['효과 기대', '통증 감소 경험'] },
-      { treatmentId: 't2', type: 'LIKE', reasons: ['재활 필요', '부작용 적음'] },
-      { treatmentId: 't6', type: 'WORRY', reasons: ['부작용 우려', '비용 부담'] },
+      { treatmentId: 't1a', type: 'LIKE', reasons: ['효과 기대', '통증 감소 경험'] },
+      { treatmentId: 't1b', type: 'LIKE', reasons: ['재활 필요', '부작용 적음'] },
+      { treatmentId: 't1f', type: 'WORRY', reasons: ['부작용 우려', '비용 부담'] },
     ],
   },
   {
@@ -89,8 +89,8 @@ const ENRICHED_DEMO_PATIENTS: (UserData & { demoPreferences?: Preference[] })[] 
       },
     ],
     demoPreferences: [
-      { treatmentId: 't5', type: 'LIKE', reasons: ['높은 증거 수준', '긍정적인 환자 후기'] },
-      { treatmentId: 't7', type: 'DISLIKE', reasons: ['부작용 걱정'] },
+      { treatmentId: 't2e', type: 'LIKE', reasons: ['높은 증거 수준', '긍정적인 환자 후기'] },
+      { treatmentId: 't2g', type: 'DISLIKE', reasons: ['부작용 걱정'] },
     ],
   },
   {
@@ -125,7 +125,7 @@ const ENRICHED_DEMO_PATIENTS: (UserData & { demoPreferences?: Preference[] })[] 
       },
     ],
     demoPreferences: [
-      { treatmentId: 't3', type: 'LIKE', reasons: ['두려움을 줄여 움직임을 촉진'] },
+      { treatmentId: 'u3', type: 'LIKE', reasons: ['두려움을 줄여 움직임을 촉진'] },
     ],
   },
 ];
