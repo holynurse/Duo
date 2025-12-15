@@ -5,7 +5,25 @@ import { TREATMENT_OPTIONS } from "../constants";
 import { CUSTOM_INSTRUCTIONS, RAG_URL_LIST, CRPS_PROFILES, CRPS_INSIGHT_NEEDS, FAQ_LIST } from "../sources/customData";
 
 const apiKey = process.env.API_KEY || '';
-const ai = new GoogleGenAI({ apiKey });
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
+
+const logGeminiError = (scope: string, error: unknown) => {
+  // 중앙 로그: API 키 여부와 에러 객체를 함께 남김
+  // scope: 어느 함수에서 실패했는지 표시
+  console.error(`[Gemini][${scope}]`, {
+    hasApiKey: !!apiKey,
+    error,
+  });
+};
+
+const requireClient = (scope: string) => {
+  if (!ai) {
+    const err = new Error(`Gemini client unavailable in ${scope} (API_KEY missing)`);
+    logGeminiError(scope, err);
+    throw err;
+  }
+  return ai;
+};
 
 const modelName = 'gemini-2.5-flash';
 
@@ -108,11 +126,10 @@ ${faqListText}
       }
 
       // 3. Construct the full prompt
-      prompt = `[역할 설정]\n${roleDescription}\n\n당신은 다음 정보를 종합하여 메시지를 생성해야 합니다.\n\n[기본 정보]\n1. **대표 환자 프로필 (객관적 맥락):**\n  \n2. **CRPS 인사이트 (전문가 조언):**\n  3. **핵심 정보 출처 (신뢰성):**\n[추가 분석 정보]\n5. **환자 현재 상태 (실시간 데이터):**\n   - 현재 통증 점수(VAS): ${userData?.vasScore}/10\n   - 오늘의 호소 내용: ${userData?.currentSymptoms || '없음'}\n   - 오늘 통증 변화: ${fluctuationText}\n   - 투병 기간: ${userData.durationMonths}개월\n   - CRPS 유형: ${userData?.crpsType}\n\n**[지시]**\n- 위 정보를 바탕으로, 당신의 역할(${audience === 'patient' ? '대변인' : '의사소통 촉진자'})에 맞는 3-4문장의 메시지를 생성하세요.\n- ${specificInstruction}\n- **핵심:** 더 정확하고 원활한 대변을 위해 "매일매일 상태 체크를 기록하는 것"이 중요하다고 권유하는 내용을 반드시 포함하세요.`;
-      prompt = `[역할 설정]\n${roleDescription}\n\n당신은 다음 정보를 종합하여 메시지를 생성해야 합니다.\n\n[기본 정보]\n1. **대표 환자 프로필 (객관적 맥락):**\n   - 주요 증상: ${representativeProfile.symptoms.join(', ')}\n2. **CRPS 인사이트 (전문가 조언):**\n3. **핵심 정보 출처 (신뢰성):**\n${urlListText}\n\n[추가 분석 정보]\n5. **환자 현재 상태 (실시간 데이터):**\n   - 현재 통증 점수(VAS): ${userData?.vasScore}/10\n   - 오늘의 호소 내용: ${userData?.currentSymptoms || '없음'}\n   - 오늘 통증 변화: ${fluctuationText}\n   - 투병 기간: ${userData.durationMonths}개월\n   - CRPS 유형: ${userData?.crpsType}\n\n**[지시]**\n- 위 정보를 바탕으로, 당신의 역할(${audience === 'patient' ? '대변인' : '의사소통 촉진자'})에 맞는 3-4문장의 메시지를 생성하세요.\n- ${specificInstruction}\n- **핵심:** 더 정확하고 원활한 대변을 위해 "매일매일 상태 체크를 기록하는 것"이 중요하다고 권유하는 내용을 반드시 포함하세요.`;
+      prompt = `[역할 설정]\n${roleDescription}\n\n "환자 현재 상태"만 참고하여 3~4문장의 메시지를 작성하세요. 대표 프로필이나 샘플 데이터는 사용하지 않습니다.\n\n[환자 현재 상태]\n- 현재 통증 점수(VAS): ${userData?.vasScore}/10\n- 오늘의 호소 내용: ${userData?.currentSymptoms || '없음'}\n- 오늘 통증 변화: ${fluctuationText}\n- 통증 위치: ${(userData?.painLocation || []).join(', ') || '없음'}\n- 투병 기간: ${userData?.durationMonths}개월\n- CRPS 유형: ${userData?.crpsType}\n\n[지시]\n- 위 정보만 바탕으로, 당신의 역할(${audience === 'patient' ? '대변인' : '의사소통 촉진자'})에 맞게 간결하고 명확한 메시지를 3~4문장으로 작성하세요.\n- ${specificInstruction}\n- **핵심:** 매일 상태 체크(통증 점수·호소 내용·위치)를 기록하는 것이 중요하다는 권유를 포함하세요.`;
     }
 
-    const response = await ai.models.generateContent({
+    const response = await requireClient('generatePersonaMessage').models.generateContent({
       model: modelName,
       contents: prompt,
     });
@@ -157,7 +174,7 @@ export const analyzeUserProfile = async (userData: UserData): Promise<string> =>
         - 통증 점수가 낮아졌다면 안심시켜주고, 높아졌다면 대안책을 제시하고 격려해주세요.
         `;
 
-        const response = await ai.models.generateContent({
+        const response = await requireClient('analyzeUserProfile').models.generateContent({
             model: modelName,
             contents: prompt,
         });
@@ -182,7 +199,7 @@ export const fetchFAQAnswer = async (question: string): Promise<{ text: string, 
 
         // 2. 미리 정의된 답변이 없다면, RAG_URL_LIST를 기반으로 AI가 답변을 생성합니다.
         const urlListText = RAG_URL_LIST.join('\n');
-        const response = await ai.models.generateContent({
+        const response = await requireClient('fetchFAQAnswer').models.generateContent({
             model: modelName,
             contents: `CRPS 환자가 다음 질문을 했습니다: "${question}"
             
@@ -237,7 +254,7 @@ export const analyzeTreatmentRealtime = async (treatmentName: string, targetUrl?
         
         출처(웹사이트)를 반드시 포함하세요.`;
 
-        const response = await ai.models.generateContent({
+        const response = await requireClient('analyzeTreatmentRealtime').models.generateContent({
             model: modelName,
             contents: contentPrompt,
         });
@@ -308,7 +325,7 @@ export const generateSmartQuestions = async (
       반환 형식: 오직 JSON만 반환하세요. 예: { "questions": ["질문 1?", "질문 2?", ...] }
     `;
 
-    const response = await ai.models.generateContent({
+    const response = await requireClient('generateSmartQuestions').models.generateContent({
       model: modelName,
       contents: prompt,
       config: {
@@ -385,7 +402,7 @@ export const chatWithDecisionPersona = async (
         상대방의 새 질문: "${userMessage}"
         `;
 
-        const response = await ai.models.generateContent({
+        const response = await requireClient('chatWithDecisionPersona').models.generateContent({
             model: modelName,
             contents: prompt,
         });
