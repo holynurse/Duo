@@ -57,9 +57,10 @@ const DecisionTalk: React.FC<Props> = ({ userData, preferences, record, currentA
   const [forceGenerate, setForceGenerate] = useState(false);
 
   // 의료진 모드에서는 하드코딩된 리포트 데이터를 사용해 화면을 구성한다.
-  const displayUser = isMedicalView ? STATIC_REPORT_DATA : userData;
-  const displayLogs = isMedicalView ? STATIC_REPORT_DATA.statusLogs : userData.statusLogs;
-  const displayHistory = isMedicalView ? STATIC_REPORT_DATA.history : userData.history;
+  // 의료진 모드에서도 실제 선택 환자 데이터를 우선 사용하고, 없을 때만 샘플로 fallback
+  const displayUser = isMedicalView && userData?.name ? userData : (isMedicalView ? STATIC_REPORT_DATA : userData);
+  const displayLogs = displayUser.statusLogs || [];
+  const displayHistory = displayUser.history || [];
   
   // Chat State
   const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([]);

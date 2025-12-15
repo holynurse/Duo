@@ -62,6 +62,12 @@ const OptionTalk: React.FC<Props> = ({ userData, initialPreferences, onBack, onN
       }
   }, [initialPreferences]);
 
+  useEffect(() => {
+      if (isMedicalView && userData?.crpsType) {
+          setMedicalSelectedType(userData.crpsType);
+      }
+  }, [isMedicalView, userData?.crpsType]);
+
   const handlePreference = (treatmentId: string, type: 'LIKE' | 'DISLIKE' | 'WORRY', customName?: string) => {
     setActiveReasonModal({ id: treatmentId, customName, type });
   };
