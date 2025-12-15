@@ -18,7 +18,7 @@ interface AnalysisData {
 
 
 // 의료진 모드에서 사용할 데모 환자(풍부한 로그/히스토리 포함)
-const ENRICHED_DEMO_PATIENTS: UserData[] = [
+const ENRICHED_DEMO_PATIENTS: (UserData & { demoPreferences?: Preference[] })[] = [
   {
     ...INITIAL_USER_DATA,
     name: '김하늘',
@@ -50,6 +50,11 @@ const ENRICHED_DEMO_PATIENTS: UserData[] = [
         generatedQuestions: ['최근 부종이 심해진 시간대가 있나요?', '계단 오르내릴 때 통증 악화 여부를 더 알려주세요.'],
         memo: '열감/부종이 심해짐, 야간 통증으로 수면 방해',
       },
+    ],
+    demoPreferences: [
+      { treatmentId: 't1', type: 'LIKE', reasons: ['효과 기대', '통증 감소 경험'] },
+      { treatmentId: 't2', type: 'LIKE', reasons: ['재활 필요', '부작용 적음'] },
+      { treatmentId: 't6', type: 'WORRY', reasons: ['부작용 우려', '비용 부담'] },
     ],
   },
   {
@@ -83,6 +88,10 @@ const ENRICHED_DEMO_PATIENTS: UserData[] = [
         memo: '신경차단술 이후 일시적 완화, 업무 패턴과 연관 의심',
       },
     ],
+    demoPreferences: [
+      { treatmentId: 't5', type: 'LIKE', reasons: ['높은 증거 수준', '긍정적인 환자 후기'] },
+      { treatmentId: 't7', type: 'DISLIKE', reasons: ['부작용 걱정'] },
+    ],
   },
   {
     ...INITIAL_USER_DATA,
@@ -114,6 +123,9 @@ const ENRICHED_DEMO_PATIENTS: UserData[] = [
         generatedQuestions: ['감각 과민이 심해지는 환경(온도/소음)이 있나요?', '수면의 질과 통증 패턴의 상관을 더 알려주세요.'],
         memo: '야간 통증 심해 수면 방해, 온열팩 후 일시 완화',
       },
+    ],
+    demoPreferences: [
+      { treatmentId: 't3', type: 'LIKE', reasons: ['두려움을 줄여 움직임을 촉진'] },
     ],
   },
 ];
@@ -276,7 +288,7 @@ const App = () => {
       };
 
       setUserData(clonedPatient);
-      setPreferences([]);
+      setPreferences((patient as UserData & { demoPreferences?: Preference[] }).demoPreferences || []); 
       setSelectedRecord(null);
       setCurrentAnalysis(null);
       setView(ViewState.DECISION_TALK);
