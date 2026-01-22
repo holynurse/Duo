@@ -21,12 +21,12 @@ interface AnalysisData {
 const ENRICHED_DEMO_PATIENTS: (UserData & { demoPreferences?: Preference[] })[] = [
   {
     ...INITIAL_USER_DATA,
-    name: '김하늘',
+    name: '나환자',
     age: '45',
     gender: 'female',
-    vasScore: 6,
-    durationMonths: 23,
-    currentSymptoms: '왼쪽 발목 열감과 부종, 계단 오를 때 찌릿한 통증',
+    vasScore: 7,
+    durationMonths: 72,
+    currentSymptoms: '왼쪽 발목 열감과 부종, 계단 오를 때 찌릿한 통증, 우울감',
     mainSymptoms: ['열감·부종', '야간 통증'],
     painLocation: ['왼쪽 발목', '종아리'],
     crpsType: 'TYPE_1',
@@ -48,7 +48,7 @@ const ENRICHED_DEMO_PATIENTS: (UserData & { demoPreferences?: Preference[] })[] 
         selectedTreatmentIds: ['t1', 't2'],
         customTreatments: [],
         generatedQuestions: ['최근 부종이 심해진 시간대가 있나요?', '계단 오르내릴 때 통증 악화 여부를 더 알려주세요.'],
-        memo: '열감/부종이 심해짐, 야간 통증으로 수면 방해',
+        memo: '열감/부종이 심해짐, 우울감이 심해짐',
       },
     ],
     demoPreferences: [
