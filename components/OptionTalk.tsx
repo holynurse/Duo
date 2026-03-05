@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { TREATMENT_OPTIONS_BY_TYPE, CRPS_TYPE_INFO } from '../constants';
+import { TREATMENT_OPTIONS, CRPS_TYPE_INFO } from '../constants';
 import { FAQ_LIST } from '../sources/customData';
 import { fetchFAQAnswer, analyzeTreatmentRealtime } from '@/services/geminiService';
 import { Preference, TreatmentOption, UserData } from '../types';
 import { ThumbsUp, ThumbsDown, AlertCircle, Check, BookOpen, Stethoscope, Loader2, ExternalLink, Plus, MessageCircleQuestion, Send, Bot, User, FileText, Zap, Sparkles, Globe, Info, MessagesSquare, CheckCircle2 } from 'lucide-react';
-import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp, MessageSquare } from 'lucide-react';
 
 interface Props {
   userData: UserData; 
@@ -32,11 +32,10 @@ const OptionTalk: React.FC<Props> = ({ userData, initialPreferences, onBack, onN
   const [medicalSelectedType, setMedicalSelectedType] = useState<'TYPE_1' | 'TYPE_2' | 'UNKNOWN'>('TYPE_1');
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customInputText, setCustomInputText] = useState("");
-  const [aiAnalysisResult, setAiAnalysisResult] = useState<{ id: string, text: string, sources: any[] } | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [selectedFaqCategory, setSelectedFaqCategory] = useState<string | null>(null);
+  const [showFaqCategories, setShowFaqCategories] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -53,6 +52,7 @@ const OptionTalk: React.FC<Props> = ({ userData, initialPreferences, onBack, onN
     // 탭이 변경되면 선택된 카테고리 초기화
     if (activeTab !== 'FAQ') {
         setSelectedFaqCategory(null);
+        setShowFaqCategories(true);
     }
   }, [chatMessages, isTyping]);
 
@@ -98,21 +98,9 @@ const OptionTalk: React.FC<Props> = ({ userData, initialPreferences, onBack, onN
       setPreferences(prev => prev.filter(p => p.treatmentId !== id));
   };
 
-  const handleAiAnalysis = async (treatmentId: string, treatmentTitle: string) => {
-      if (isAnalyzing) return;
-      setAiAnalysisResult(null);
-      setIsAnalyzing(true);
-      const result = await analyzeTreatmentRealtime(treatmentTitle);
-      setAiAnalysisResult({
-          id: treatmentId,
-          text: result.summary,
-          sources: result.sources
-      });
-      setIsAnalyzing(false);
-  };
-
   const handleSendMessage = async (text: string) => {
       if (!text.trim()) return;
+      setShowFaqCategories(false);
       const newUserMsg: ChatMessage = { id: Date.now().toString(), role: 'user', content: text };
       setChatMessages(prev => [...prev, newUserMsg]);
       setInputMessage("");
@@ -144,7 +132,9 @@ const OptionTalk: React.FC<Props> = ({ userData, initialPreferences, onBack, onN
 
   const getPreferenceStatus = (id: string) => preferences.find(p => p.treatmentId === id);
 
-const treatmentsForType = TREATMENT_OPTIONS_BY_TYPE[activeType] ?? [];
+const treatmentsForType = TREATMENT_OPTIONS.filter(option => 
+    option.recommendedTypes.includes(activeType)
+);
 const sortedTreatments = [...treatmentsForType].sort((a, b) => {
   if (a.evidenceLevel === 'High' && b.evidenceLevel !== 'High') return -1;
   if (a.evidenceLevel !== 'High' && b.evidenceLevel === 'High') return 1;
@@ -182,11 +172,15 @@ const sortedTreatments = [...treatmentsForType].sort((a, b) => {
             <Stethoscope size={16} className="md:w-5 md:h-5" /> 치료 옵션 목록
           </button>
           <button 
-            onClick={() => setActiveTab('FAQ')}
+            onClick={() => {
+                setActiveTab('FAQ');
+                setSelectedFaqCategory(null);
+                setShowFaqCategories(true);
+            }}
             className={`flex-1 py-3 md:py-4 rounded-lg md:rounded-xl text-xs md:text-sm font-bold flex items-center justify-center gap-1.5 md:gap-2 transition-all duration-300 relative z-10
               ${activeTab === 'FAQ' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'}`}
           >
-            <MessagesSquare size={16} className="md:w-5 md:h-5" /> 
+            <MessageSquare size={16} className="md:w-5 md:h-5" /> 
             <span>상세 FAQ</span>
             {activeTab !== 'FAQ' && (
                 <span className="bg-indigo-100 text-indigo-700 text-[10px] px-1.5 py-0.5 rounded-full border border-indigo-200 ml-1 whitespace-nowrap hidden sm:inline-block">AI Chat</span>
@@ -328,8 +322,7 @@ const sortedTreatments = [...treatmentsForType].sort((a, b) => {
                         {!isMedicalView && (
                         <button 
                             onClick={() => {
-                                setExpandedCard(isExpanded ? null : option.id);
-                                setAiAnalysisResult(null); 
+                                setExpandedCard(isExpanded ? null : option.id); 
                             }}
                             className="w-full mt-4 text-center text-xs md:text-sm text-blue-600 font-medium hover:underline flex justify-center items-center gap-1"
                         >
@@ -368,51 +361,7 @@ const sortedTreatments = [...treatmentsForType].sort((a, b) => {
                                     <ExternalLink size={12} />
                                 </a>
                             )}
-                            
-                            <button 
-                                onClick={() => handleAiAnalysis(option.id, option.title)}
-                                disabled={isAnalyzing && !aiAnalysisResult}
-                                className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg text-xs md:text-sm font-medium hover:shadow-md transition-all disabled:opacity-70 w-full sm:w-auto"
-                            >
-                                {isAnalyzing && aiAnalysisResult?.id !== option.id ? <Loader2 size={14} className="animate-spin"/> : <Globe size={14} />}
-                                <span>✨ AI 최신 분석</span>
-                            </button>
                         </div>
-
-                        {(isAnalyzing || aiAnalysisResult?.id === option.id) && (
-                            <div className="mt-4 p-4 bg-white border border-purple-100 rounded-xl shadow-sm animate-fade-in">
-                                {isAnalyzing && !aiAnalysisResult ? (
-                                    <div className="flex flex-col items-center justify-center py-4 text-purple-600">
-                                        <Loader2 size={24} className="animate-spin mb-2" />
-                                        <p className="text-xs">최신 의학 정보를 검색하고 있습니다...</p>
-                                    </div>
-                                ) : (
-                                    aiAnalysisResult && (
-                                        <>
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <Bot size={16} className="text-purple-600" />
-                                                <h4 className="text-sm font-bold text-purple-800">AI 실시간 분석 리포트</h4>
-                                            </div>
-                                            <div className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
-                                                {aiAnalysisResult.text}
-                                            </div>
-                                            {aiAnalysisResult.sources.length > 0 && (
-                                                <div className="mt-3 pt-3 border-t border-slate-100">
-                                                    <p className="text-xs font-bold text-slate-400 mb-1">참고 출처</p>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {aiAnalysisResult.sources.map((s, i) => (
-                                                            <a key={i} href={s.uri} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[10px] bg-slate-50 hover:bg-slate-100 text-blue-500 px-2 py-1 rounded">
-                                                                <ExternalLink size={10} /> {s.title}
-                                                            </a>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </>
-                                    )
-                                )}
-                            </div>
-                        )}
                     </div>
                     )}
                 </div>
@@ -471,9 +420,21 @@ const sortedTreatments = [...treatmentsForType].sort((a, b) => {
 
       {activeTab === 'FAQ' && (
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col h-[450px] md:h-[600px] animate-fade-in">
+            <div className="flex items-center justify-end gap-2 px-3 md:px-4 py-2 border-b border-slate-100 bg-white">
+                <button
+                    type="button"
+                    onClick={() => {
+                        setSelectedFaqCategory(null);
+                        setShowFaqCategories(prev => !prev);
+                    }}
+                    className="text-xs md:text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                >
+                    {showFaqCategories ? '채팅 보기' : '카테고리 보기'}
+                </button>
+            </div>
             {/* Chat Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
-                {chatMessages.length === 0 && (
+                {showFaqCategories && (
                    <div className="space-y-6 max-w-2xl mx-auto py-8">
                        <div className="text-center mb-6">
                            <div className="w-10 h-10 md:w-12 md:h-12 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -517,7 +478,7 @@ const sortedTreatments = [...treatmentsForType].sort((a, b) => {
                    </div>
                 )}
 
-                {chatMessages.map((msg) => (
+                {!showFaqCategories && chatMessages.map((msg) => (
                     <div key={msg.id} className={`flex gap-2 md:gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         {msg.role === 'assistant' && (
                             <div className="w-6 h-6 md:w-8 md:h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
@@ -546,7 +507,7 @@ const sortedTreatments = [...treatmentsForType].sort((a, b) => {
                     </div>
                 ))}
                 
-                {isTyping && (
+                {!showFaqCategories && isTyping && (
                     <div className="flex gap-2 justify-start animate-fade-in">
                         <div className="w-6 h-6 md:w-8 md:h-8 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
                             <Bot size={14} className="text-indigo-600" />
@@ -602,13 +563,13 @@ const sortedTreatments = [...treatmentsForType].sort((a, b) => {
       {activeReasonModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md p-5 md:p-6 animate-scale-in">
-            <h3 className="text-lg font-bold mb-4">
+            <h3 className="text-lg font-bold mb-4 break-keep">
                 {activeReasonModal.customName ? `'${activeReasonModal.customName}'에 대해` : '어떤 점이 그렇게 느껴지시나요?'}
             </h3>
             <p className="text-sm text-slate-500 mb-4">해당되는 이유를 모두 선택해주세요.</p>
             
             <ReasonSelector 
-              options={getReasonOptions(activeReasonModal.type, TREATMENT_OPTIONS_BY_TYPE[activeType]?.find(t => t.id === activeReasonModal.id))}
+              options={getReasonOptions(activeReasonModal.type, TREATMENT_OPTIONS.find(t => t.id === activeReasonModal.id))}
               onConfirm={confirmPreference}
               onCancel={() => {
                   setActiveReasonModal(null);
