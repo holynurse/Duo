@@ -27,7 +27,7 @@ const Profile: React.FC<Props> = ({ userData, onSave, onBack }) => {
 
   return (
     <div className="max-w-xl mx-auto animate-fade-in">
-      <div className="mb-8">
+      <div className="mb-6">
         <UserManual />
       </div>
     
