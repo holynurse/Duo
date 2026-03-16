@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState, useEffect } from 'react';
 import { ViewState, UserData, Preference, INITIAL_USER_DATA, ConsultationRecord, StatusLog } from './types';
 import ChoiceTalk from './components/ChoiceTalk';

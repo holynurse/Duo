@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { UserData, ConsultationRecord, StatusLog } from '../types';
-import UserManual from './UserManual';
 import { ArrowRight, HeartHandshake, History, BookOpen, TrendingUp, ChevronRight, FileText, Clock, Stethoscope, ClipboardList } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceDot } from 'recharts';
 
@@ -50,10 +49,7 @@ const Home: React.FC<Props> = ({ userData, onStart, onExplore, onLogStatus, onGe
         </p>
       </div>
 
-      <div className="flex justify-center">
-        <UserManual />
-      </div>
-
+     
       {/* Primary Actions Grid (1 col on mobile, 2 on tablet/desktop) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
           {/* 1. ChoiceTalk */}
