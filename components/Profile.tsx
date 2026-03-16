@@ -24,18 +24,18 @@ const Profile: React.FC<Props> = ({ userData, onSave, onBack }) => {
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
-    <div className="mb-8">
-        <UserManual />
-    </div>
-    
+
   return (
     <div className="max-w-xl mx-auto animate-fade-in">
+      <div className="mb-8">
+        <UserManual />
+      </div>
+    
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-slate-800">내 정보 관리</h2>
         <p className="text-slate-500 mt-2">더 정확하고 개인화된 듀오(Duo)를 만나기 위해 정보를 입력해주세요.</p>
       </div>
       
-
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 space-y-8">
         
         {/* Section 1: Basic Info */}
