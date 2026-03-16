@@ -26,10 +26,11 @@ const Profile: React.FC<Props> = ({ userData, onSave, onBack }) => {
   };
 
   return (
-    <div className="max-w-xl mx-auto animate-fade-in">
-      <div className="mb-6">
-        <UserManual />
-      </div>
+    <div className="max-w-xl mx-auto animate-fade-in relative">
+    {/* Duo 로고 위, 좌측 상단 고정 */}
+    <div className="absolute top-0 left-0">
+      <UserManual />
+    </div>
     
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-slate-800">내 정보 관리</h2>
