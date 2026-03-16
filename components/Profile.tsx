@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { UserData } from '../types';
+import UserManual from './UserManual';
 import { User, Calendar, Save, ArrowLeft, Activity, Heart, Brain, MessageCircle } from 'lucide-react';
 
 interface Props {
@@ -29,6 +30,9 @@ const Profile: React.FC<Props> = ({ userData, onSave, onBack }) => {
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-slate-800">내 정보 관리</h2>
         <p className="text-slate-500 mt-2">더 정확하고 개인화된 듀오(Duo)를 만나기 위해 정보를 입력해주세요.</p>
+      </div>
+      <div className="mb-8">
+        <UserManual />
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 space-y-8">

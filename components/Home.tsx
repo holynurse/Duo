@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { UserData, ConsultationRecord, StatusLog } from '../types';
+import UserManual from './UserManual';
 import { ArrowRight, HeartHandshake, History, BookOpen, TrendingUp, ChevronRight, FileText, Clock, Stethoscope, ClipboardList } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceDot } from 'recharts';
 
@@ -47,6 +48,10 @@ const Home: React.FC<Props> = ({ userData, onStart, onExplore, onLogStatus, onGe
         <p className="text-sm md:text-base text-slate-600">
             오늘의 상태를 기록하고, 맞춤형 진료 여정을 시작해보세요.
         </p>
+      </div>
+
+      <div className="flex justify-center">
+        <UserManual />
       </div>
 
       {/* Primary Actions Grid (1 col on mobile, 2 on tablet/desktop) */}

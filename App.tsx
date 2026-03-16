@@ -6,6 +6,7 @@ import OptionTalk from './components/OptionTalk';
 import Bridge from './components/Bridge';
 import DecisionTalk from './components/DecisionTalk';
 import Home from './components/Home';
+import UserManual from './components/UserManual';
 import Profile from './components/Profile';
 import MedicalDashboard from './components/MedicalDashboard';
 import Logo from './components/Logo';
@@ -404,6 +405,7 @@ const App = () => {
                          <br/>안전한 서비스 이용을 위해 계정을 생성해주세요.<br/>입력된 정보는 오직 이 기기에만 저장됩니다.</p>
                   </div>
                   <Profile 
+                    
                     userData={userData} 
                     onSave={handleProfileSave} 
                   />
@@ -421,6 +423,9 @@ const App = () => {
         lg:relative lg:translate-x-0 lg:flex lg:flex-col
         ${isMedicalMode ? 'border-teal-200' : ''}
       `}>
+            <div className="p-4">
+                <UserManual />
+            </div>
         {/* Logo */}
         <div className="p-6 flex items-center gap-3 bg-white z-50">
              <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo(isMedicalMode ? ViewState.MEDICAL_HOME : ViewState.HOME)}>
