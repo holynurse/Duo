@@ -404,6 +404,7 @@ const App = () => {
                       <p className="text-slate-500 mt-2">안녕하세요. 저는 CRPS환자와 의료진의 의사결정을 돕기 위한 Duo입니다. <br/>저는 CRPS 환자를 잘 아는 간호사 Info-Mate와 맞춤형 의사결정을 돕는 Decision-helper로 구성되어 있어 Duo입니다. <br/>저는 여러분의 성공적인 치료를 위한 한 팀이에요.
                          <br/>안전한 서비스 이용을 위해 계정을 생성해주세요.<br/>입력된 정보는 오직 이 기기에만 저장됩니다.</p>
                   </div>
+                
                   <Profile 
                     
                     userData={userData} 
@@ -423,9 +424,7 @@ const App = () => {
         lg:relative lg:translate-x-0 lg:flex lg:flex-col
         ${isMedicalMode ? 'border-teal-200' : ''}
       `}>
-            <div className="p-4">
-                <UserManual />
-            </div>
+            
         {/* Logo */}
         <div className="p-6 flex items-center gap-3 bg-white z-50">
              <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo(isMedicalMode ? ViewState.MEDICAL_HOME : ViewState.HOME)}>
@@ -515,6 +514,10 @@ const App = () => {
                 </>
             )}
           </nav>
+
+          <div className="p-4">
+                  <UserManual />
+                  </div>
 
           <div className="mt-auto space-y-4 pt-6">
               {!isMedicalMode && (
