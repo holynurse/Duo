@@ -454,6 +454,17 @@ const App = () => {
                         <X size={24} />
                     </button>
                 </div>
+                <div className="px-6 pb-2">
+                    <a
+                        href="/Duo_User_Manual.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full inline-flex items-center justify-center gap-2 text-sm font-bold text-sky-700 bg-sky-50 border border-sky-100 px-3 py-2 rounded-xl hover:bg-sky-100"
+                    >
+                        <BookOpen size={16} />
+                        사용자 매뉴얼 (PDF)
+                    </a>
+                </div>
 
                 {/* Navigation Content */}
                 <div className="flex flex-col flex-1 px-6 pb-6 overflow-y-auto">
@@ -524,10 +535,6 @@ const App = () => {
                             </>
                         )}
                     </nav>
-
-                    <div className="p-4">
-                        <UserManual />
-                    </div>
 
                     <div className="mt-auto space-y-4 pt-6">
                         {!isMedicalMode && (
