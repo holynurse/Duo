@@ -26,12 +26,7 @@ const Profile: React.FC<Props> = ({ userData, onSave, onBack }) => {
   };
 
   return (
-    <div className="max-w-xl mx-auto animate-fade-in relative">
-    {/* Duo 로고 위, 좌측 상단 고정 */}
-    <div className="absolute top-0 left-0">
-      <UserManual />
-    </div>
-    
+    <div className="max-w-xl mx-auto animate-fade-in">
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-slate-800">내 정보 관리</h2>
         <p className="text-slate-500 mt-2">더 정확하고 개인화된 듀오(Duo)를 만나기 위해 정보를 입력해주세요.</p>
