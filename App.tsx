@@ -405,12 +405,13 @@ const App = () => {
                         </button>
                     </div>
 
+                    {/* Large Logo + Title Row (Left, under manual) */}
+                    <div className="mb-6 flex items-center gap-6">
+                        <img src="/logo-chat.png" alt="Duo logo" className="w-48 h-48" />
+                        <h1 className="text-3xl font-bold text-slate-900 translate-x-2">Duo</h1>
+                    </div>
 
                     <div className="text-center mb-8">
-                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-100 bg-white border border-blue-100">
-                            <img src="/logo-chat.png" alt="Duo logo" className="w-12 h-12" />
-                        </div>
-                        <h1 className="text-3xl font-bold text-slate-900">Duo</h1>
                         <div className="mt-3 mx-auto max-w-2xl bg-white border border-slate-200 rounded-2xl p-4 md:p-5 text-slate-600 text-sm md:text-base leading-relaxed shadow-sm">
                             <p>안녕하세요. CRPS 환자와 의료진의 의사결정을 돕는 Duo입니다.</p>
                             <p className="mt-2">Duo는 CRPS환자를 잘아는 간호사 역할을 하는 인포메이트(Info‑Mate)와 맞춤형 의사결정을 돕는 도우미(Decision‑helper)로 구성되어 있어요.</p>
@@ -442,7 +443,7 @@ const App = () => {
                 <div className="p-6 flex items-center gap-3 bg-white z-50">
                     <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigateTo(isMedicalMode ? ViewState.MEDICAL_HOME : ViewState.HOME)}>
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${isMedicalMode ? 'bg-teal-50 border-teal-200' : 'bg-blue-50 border-blue-200'}`}>
-                            <Logo size={28} variant={isMedicalMode ? 'medical' : 'default'} />
+                            <img src="/logo-chat.png" alt="Duo logo" className="w-7 h-7" />
                         </div>
                         <div>
                             <span className="font-bold text-xl tracking-tight text-slate-900 block leading-none">Duo</span>
