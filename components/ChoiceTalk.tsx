@@ -40,7 +40,7 @@ const ChoiceTalk: React.FC<Props> = ({ onNext, isMedicalView }) => {
       <div className="space-y-4 md:space-y-6">
         <div className="px-1 md:px-2">
             <h3 className="text-lg md:text-2xl font-bold text-slate-800">CRPS 환자 데이터 인사이트</h3>
-            <p className="text-sm text-slate-500 mt-1">상급종합병원 환자들의 임상 데이터를 시각화했습니다.</p>
+            <p className="text-sm text-slate-500 mt-1">실제 우리나라 상급종합병원 환자들의 임상 데이터를 시각화했습니다.</p>
         </div>
         
         <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-8 shadow-sm border border-slate-100 relative overflow-hidden">
@@ -146,7 +146,7 @@ const ChoiceTalk: React.FC<Props> = ({ onNext, isMedicalView }) => {
             <h3 className="text-lg md:text-2xl font-bold text-slate-800 flex items-center gap-2">
                 <HelpCircle className="w-5 h-5 md:w-7 md:h-7 text-blue-500" /> 자주 묻는 질문 (요약)
             </h3>
-            <p className="text-sm text-slate-500 mt-1">다른 환자분들이 가장 많이 궁금해했던 질문들을 모았습니다.</p>
+            <p className="text-sm text-slate-500 mt-1">다른 환자분들이 가장 많이 궁금해했던 질문들을 모았습니다. 여러분과 같은 고통을 겪은 환자들의 이야기를 통해 궁금증을 해결해보세요</p>
         </div>
         
         <div className="space-y-4 md:space-y-8">
