@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { TREATMENT_OPTIONS, CRPS_TYPE_INFO } from '../constants';
-import { FAQ_LIST } from '../sources/customData';
-import { fetchFAQAnswer, analyzeTreatmentRealtime } from '@/services/geminiService';
+import { FAQ_LIST, RAG_URL_ENTRIES } from '../sources/customData';
+import { fetchFAQAnswer } from '@/services/geminiService';
 import { Preference, TreatmentOption, UserData } from '../types';
-import { ThumbsUp, ThumbsDown, AlertCircle, Check, BookOpen, Stethoscope, Loader2, ExternalLink, Plus, MessageCircleQuestion, Send, Bot, User, FileText, Zap, Sparkles, Globe, Info, MessagesSquare, CheckCircle2 } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, AlertCircle, Check, BookOpen, Stethoscope, Loader2, ExternalLink, Plus, MessageCircleQuestion, Send, Bot, User, FileText, Zap, Sparkles, Info, MessagesSquare, CheckCircle2 } from 'lucide-react';
 import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp, MessageSquare } from 'lucide-react';
 
 interface Props {
@@ -38,6 +38,7 @@ const OptionTalk: React.FC<Props> = ({ userData, initialPreferences, onBack, onN
   const [showFaqCategories, setShowFaqCategories] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [evidenceOpenId, setEvidenceOpenId] = useState<string | null>(null);
 
   const activeType = isMedicalView ? medicalSelectedType : userData.crpsType;
   const typeInfo = CRPS_TYPE_INFO[activeType] || CRPS_TYPE_INFO['UNKNOWN'];
@@ -116,6 +117,32 @@ const OptionTalk: React.FC<Props> = ({ userData, initialPreferences, onBack, onN
           sources: result.sources
       }]);
       setIsTyping(false);
+  };
+
+  const normalizeText = (input: string) =>
+      input.toLowerCase().replace(/[^a-z0-9가-힣]+/g, ' ').trim();
+
+  const getEvidenceLinks = (title: string) => {
+      const tokens = normalizeText(title).split(' ').filter(t => t.length >= 2);
+      if (tokens.length === 0) return [];
+
+      const matches = RAG_URL_ENTRIES.filter(entry => {
+          const hay = normalizeText(`${entry.title} ${entry.url}`);
+          return tokens.some(t => hay.includes(t));
+      });
+      return matches;
+  };
+
+  const getFallbackEvidenceLinks = () => {
+      const fallback = RAG_URL_ENTRIES.filter(entry => {
+          const t = normalizeText(entry.title);
+          return t.includes('crps 1') || t.includes('crps 2');
+      });
+      return fallback.slice(0, 2);
+  };
+
+  const toggleEvidenceLinks = (id: string) => {
+      setEvidenceOpenId(prev => (prev === id ? null : id));
   };
 
   const getReasonOptions = (type: 'LIKE' | 'DISLIKE' | 'WORRY', treatment?: TreatmentOption) => {
@@ -349,19 +376,36 @@ const sortedTreatments = [...treatmentsForType].sort((a, b) => {
                         </div>
                         
                         <div className="mt-4 flex flex-col sm:flex-row flex-wrap gap-2">
-                            {option.referenceUrl && (
-                                <a 
-                                    href={option.referenceUrl} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs md:text-sm text-slate-600 hover:text-blue-600 hover:border-blue-300 transition-colors w-full sm:w-auto"
-                                >
-                                    <FileText size={14} />
-                                    <span>의학 근거 보기</span>
-                                    <ExternalLink size={12} />
-                                </a>
-                            )}
+                            <button
+                                type="button"
+                                onClick={() => toggleEvidenceLinks(option.id)}
+                                className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs md:text-sm text-slate-600 hover:text-blue-600 hover:border-blue-300 transition-colors w-full sm:w-auto"
+                            >
+                                <FileText size={14} />
+                                <span>View evidence</span>
+                                <ExternalLink size={12} />
+                            </button>
                         </div>
+
+                        {evidenceOpenId === option.id && (
+                            <div className="mt-3 bg-white border border-slate-200 rounded-lg p-3 text-xs md:text-sm text-slate-700 space-y-2">
+                                <p className="font-bold text-slate-700">Evidence links</p>
+                                <div className="flex flex-col gap-2">
+                                    {(getEvidenceLinks(option.title).length > 0 ? getEvidenceLinks(option.title) : getFallbackEvidenceLinks()).map((entry, i) => (
+                                            <a
+                                                key={`${option.id}-rag-${i}`}
+                                                href={entry.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-2 text-blue-600 hover:underline break-all"
+                                            >
+                                                <ExternalLink size={12} /> {entry.title}
+                                            </a>
+                                        ))}
+                                </div>
+                            </div>
+                        )}
+
                     </div>
                     )}
                 </div>

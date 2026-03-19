@@ -54,9 +54,13 @@ export const CRPS_INSIGHT_NEEDS = rawInsights.map(i => ({
     need: i.need,
 }));
 
-// RAG URL 목록 (CSV 파일로부터 로드)
-const rawRagUrls = parseCsv<{ url: string; description: string }>(ragUrlsCsv);
-export const RAG_URL_LIST = rawRagUrls.map(r => r.url);
+// RAG URL ?? (CSV ????? ??)
+const rawRagUrls = parseCsv<{ ID: string; Title: string; Url: string }>(ragUrlsCsv);
+export const RAG_URL_ENTRIES = rawRagUrls.map(r => ({
+    title: r.Title,
+    url: r.Url,
+}));
+export const RAG_URL_LIST = RAG_URL_ENTRIES.map(r => r.url);
 
 // FAQ 리스트 (Grounding 데이터로 활용)
 const rawFaqList = parseCsv<{ category: string; q: string; a: string }>(faqListCsv);
