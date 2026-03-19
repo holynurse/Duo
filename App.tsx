@@ -408,15 +408,14 @@ const App = () => {
 
                     <div className="text-center mb-8">
                         <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-100 bg-white border border-blue-100">
-                            <Logo size={52} />
+                            <img src="/logo-chat.png" alt="Duo logo" className="w-12 h-12" />
                         </div>
-                        <h1 className="text-3xl font-bold text-slate-900">Duo 시작하기</h1>
-                        <p className="text-slate-500 mt-2 leading-relaxed">
-                            <span className="block">안녕하세요. CRPS 환자와 의료진의 의사결정을 돕는 Duo입니다.</span>
-                            <span className="block mt-1">Duo는 CRPS환자를 잘아는 간호사 역할을 하는 인포메이트(Info‑Mate)와 맞춤형 의사결정을 돕는 도우미(Decision‑helper)로 구성되어 있어요.</span>
-                            <span className="block mt-1">CRPS(Complex Regional Pain Syndrome)는 복합부위통증증후군으로, 심한 통증·부종·피부 변화가 동반될 수 있는 신경병증성 만성 통증 질환입니다. 통증을 앓고 있는 환자의 어려움을 이해하고, 그에 대한 정보를 쉽게 공유함으로써 더 나은 치료계획을 세우려고 합니다.</span>
-                            <span className="block mt-1">안전한 서비스 이용을 위해 계정을 생성해 주세요. 입력된 정보는 이 기기에만 저장됩니다.</span>
-                        </p>
+                        <h1 className="text-3xl font-bold text-slate-900">Duo</h1>
+                        <div className="mt-3 mx-auto max-w-2xl bg-white border border-slate-200 rounded-2xl p-4 md:p-5 text-slate-600 text-sm md:text-base leading-relaxed shadow-sm">
+                            <p>안녕하세요. CRPS 환자와 의료진의 의사결정을 돕는 Duo입니다.</p>
+                            <p className="mt-2">Duo는 CRPS환자를 잘아는 간호사 역할을 하는 인포메이트(Info‑Mate)와 맞춤형 의사결정을 돕는 도우미(Decision‑helper)로 구성되어 있어요.</p>
+                            <p className="mt-2">CRPS(Complex Regional Pain Syndrome)는 복합부위통증증후군으로, 심한 통증·부종·피부 변화가 동반될 수 있는 신경병증성 만성 통증 질환입니다. 통증을 앓고 있는 환자의 어려움을 이해하고, 그에 대한 정보를 쉽게 공유함으로써 더 나은 치료계획을 세우려고 합니다.</p>
+                        </div>
                     </div>
 
                     <Profile
