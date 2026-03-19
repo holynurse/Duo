@@ -267,7 +267,7 @@ const sortedTreatments = [...treatmentsForType].sort((a, b) => {
               ${activeTab === 'FAQ' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'}`}
           >
             <MessageSquare size={16} className="md:w-5 md:h-5" /> 
-            <span>{'\uC758\uD559\uC801 \uADFC\uAC70 \uBCF4\uAE30'}</span>
+            <span>{'\uC0C1\uC138 FAQ'}</span>
             {activeTab !== 'FAQ' && (
                 <span className="bg-indigo-100 text-indigo-700 text-[10px] px-1.5 py-0.5 rounded-full border border-indigo-200 ml-1 whitespace-nowrap hidden sm:inline-block">AI Chat</span>
             )}

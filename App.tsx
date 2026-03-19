@@ -413,8 +413,8 @@ const App = () => {
                         <h1 className="text-3xl font-bold text-slate-900">Duo 시작하기</h1>
                         <p className="text-slate-500 mt-2 leading-relaxed">
                             <span className="block">안녕하세요. CRPS 환자와 의료진의 의사결정을 돕는 Duo입니다.</span>
-                            <span className="block mt-1">Duo는 간호사형 안내자 Info‑Mate와 맞춤형 의사결정 도우미 Decision‑helper로 구성되어 있어요.</span>
-                            <span className="block mt-1">CRPS(Complex Regional Pain Syndrome)는 복합부위통증증후군으로, 심한 통증·부종·피부 변화가 동반될 수 있는 신경병증성 만성 통증 질환입니다.</span>
+                            <span className="block mt-1">Duo는 CRPS환자를 잘아는 간호사 역할을 하는 인포메이트(Info‑Mate)와 맞춤형 의사결정을 돕는 도우미(Decision‑helper)로 구성되어 있어요.</span>
+                            <span className="block mt-1">CRPS(Complex Regional Pain Syndrome)는 복합부위통증증후군으로, 심한 통증·부종·피부 변화가 동반될 수 있는 신경병증성 만성 통증 질환입니다. 통증을 앓고 있는 환자의 어려움을 이해하고, 그에 대한 정보를 쉽게 공유함으로써 더 나은 치료계획을 세우려고 합니다.</span>
                             <span className="block mt-1">안전한 서비스 이용을 위해 계정을 생성해 주세요. 입력된 정보는 이 기기에만 저장됩니다.</span>
                         </p>
                     </div>
