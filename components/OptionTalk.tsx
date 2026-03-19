@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { TREATMENT_OPTIONS, CRPS_TYPE_INFO } from '../constants';
-import { FAQ_LIST, RAG_URL_ENTRIES } from '../sources/customData';
+import { FAQ_LIST } from '../sources/customData';
 import { fetchFAQAnswer } from '@/services/geminiService';
 import { Preference, TreatmentOption, UserData } from '../types';
 import { ThumbsUp, ThumbsDown, AlertCircle, Check, BookOpen, Stethoscope, Loader2, ExternalLink, Plus, MessageCircleQuestion, Send, Bot, User, FileText, Zap, Sparkles, Info, MessagesSquare, CheckCircle2 } from 'lucide-react';
@@ -119,26 +119,85 @@ const OptionTalk: React.FC<Props> = ({ userData, initialPreferences, onBack, onN
       setIsTyping(false);
   };
 
-  const normalizeText = (input: string) =>
-      input.toLowerCase().replace(/[^a-z0-9가-힣]+/g, ' ').trim();
-
-  const getEvidenceLinks = (title: string) => {
-      const tokens = normalizeText(title).split(' ').filter(t => t.length >= 2);
-      if (tokens.length === 0) return [];
-
-      const matches = RAG_URL_ENTRIES.filter(entry => {
-          const hay = normalizeText(`${entry.title} ${entry.url}`);
-          return tokens.some(t => hay.includes(t));
-      });
-      return matches;
-  };
-
-  const getFallbackEvidenceLinks = () => {
-      const fallback = RAG_URL_ENTRIES.filter(entry => {
-          const t = normalizeText(entry.title);
-          return t.includes('crps 1') || t.includes('crps 2');
-      });
-      return fallback.slice(0, 2);
+  const EVIDENCE_LINKS_BY_TYPE: Record<'TYPE_1' | 'TYPE_2' | 'UNKNOWN', Record<string, { title: string; url: string }[]>> = {
+      TYPE_1: {
+          Rehabilitation: [
+              { title: '질병관리청 희귀질환정보 헬프라인', url: 'https://helpline.kdca.go.kr/cdchelp/ph/rdiz/selectRdizInfDetail.do?menu=A0100&rdizCd=RA201810574' },
+              { title: '서울아산병원 질환백과', url: 'https://www.amc.seoul.kr/asan/healthinfo/disease/diseaseDetail.do?contentId=31733' },
+              { title: 'Mayo Clinic CRPS', url: 'https://www.mayoclinic.org/diseases-conditions/crps-complex-regional-pain-syndrome/symptoms-causes/syc-20371151' },
+              { title: 'NHS CRPS', url: 'https://www.nhs.uk/conditions/complex-regional-pain-syndrome/' },
+          ],
+          Medication: [
+              { title: '서울대학교병원 의학정보', url: 'https://www.snuh.org/health/nMedInfo/nView.do?category=DIS&medid=AA000252' },
+              { title: '분당서울대병원 희귀질환센터', url: 'https://www.snubh.org/dh/main/index.do?DP_CD=RDC&MENU_ID=003041' },
+              { title: 'MedlinePlus CRPS', url: 'https://medlineplus.gov/complexregionalpainsyndrome.html' },
+              { title: 'AAPM&R CRPS Treatment', url: 'https://now.aapmr.org/complex-regional-pain-syndrome-part-2-management-and-treatment/' },
+          ],
+          Procedure: [
+              { title: '삼성서울병원 질환정보', url: 'http://www.samsunghospital.com/home/hbv/disease/info/view.do?CONT_ID=1325&CONT_SRC_ID=09a4727a8000f24a&CONT_SRC=CMS&CONT_CLS_CD=001020001' },
+              { title: '서울대학교병원 의학정보', url: 'https://www.snuh.org/health/nMedInfo/nView.do?category=DIS&medid=AA000252' },
+              { title: 'NIH/NINDS CRPS', url: 'https://www.ninds.nih.gov/health-information/disorders/complex-regional-pain-syndrome' },
+              { title: 'RCP CRPS Guideline', url: 'https://www.rcplondon.ac.uk/improving-care/resources/complex-regional-pain-syndrome-in-adults-2nd-edition/' },
+          ],
+          default: [
+              { title: '질병관리청 희귀질환정보 헬프라인', url: 'https://helpline.kdca.go.kr/cdchelp/ph/rdiz/selectRdizInfDetail.do?menu=A0100&rdizCd=RA201810574' },
+              { title: '서울대학교병원 의학정보', url: 'https://www.snuh.org/health/nMedInfo/nView.do?category=DIS&medid=AA000252' },
+              { title: 'NHS CRPS', url: 'https://www.nhs.uk/conditions/complex-regional-pain-syndrome/' },
+              { title: 'MedlinePlus CRPS', url: 'https://medlineplus.gov/complexregionalpainsyndrome.html' },
+          ],
+      },
+      TYPE_2: {
+          Rehabilitation: [
+              { title: '분당서울대병원 희귀질환센터', url: 'https://www.snubh.org/dh/main/index.do?DP_CD=RDC&MENU_ID=003041' },
+              { title: '서울아산병원 질환백과', url: 'https://www.amc.seoul.kr/asan/healthinfo/disease/diseaseDetail.do?contentId=31733' },
+              { title: 'NHS CRPS', url: 'https://www.nhs.uk/conditions/complex-regional-pain-syndrome/' },
+              { title: 'Mayo Clinic CRPS', url: 'https://www.mayoclinic.org/diseases-conditions/crps-complex-regional-pain-syndrome/symptoms-causes/syc-20371151' },
+          ],
+          Medication: [
+              { title: '서울대학교병원 의학정보', url: 'https://www.snuh.org/health/nMedInfo/nView.do?category=DIS&medid=AA000252' },
+              { title: '삼성서울병원 질환정보', url: 'http://www.samsunghospital.com/home/hbv/disease/info/view.do?CONT_ID=1325&CONT_SRC_ID=09a4727a8000f24a&CONT_SRC=CMS&CONT_CLS_CD=001020001' },
+              { title: 'MedlinePlus CRPS', url: 'https://medlineplus.gov/complexregionalpainsyndrome.html' },
+              { title: 'AAPM&R CRPS Treatment', url: 'https://now.aapmr.org/complex-regional-pain-syndrome-part-2-management-and-treatment/' },
+          ],
+          Procedure: [
+              { title: '질병관리청 희귀질환정보 헬프라인', url: 'https://helpline.kdca.go.kr/cdchelp/ph/rdiz/selectRdizInfDetail.do?menu=A0100&rdizCd=RA201810574' },
+              { title: '서울대학교병원 의학정보', url: 'https://www.snuh.org/health/nMedInfo/nView.do?category=DIS&medid=AA000252' },
+              { title: 'NIH/NINDS CRPS', url: 'https://www.ninds.nih.gov/health-information/disorders/complex-regional-pain-syndrome' },
+              { title: 'RCP CRPS Guideline', url: 'https://www.rcplondon.ac.uk/improving-care/resources/complex-regional-pain-syndrome-in-adults-2nd-edition/' },
+          ],
+          default: [
+              { title: '서울대학교병원 의학정보', url: 'https://www.snuh.org/health/nMedInfo/nView.do?category=DIS&medid=AA000252' },
+              { title: '질병관리청 희귀질환정보 헬프라인', url: 'https://helpline.kdca.go.kr/cdchelp/ph/rdiz/selectRdizInfDetail.do?menu=A0100&rdizCd=RA201810574' },
+              { title: 'MedlinePlus CRPS', url: 'https://medlineplus.gov/complexregionalpainsyndrome.html' },
+              { title: 'NHS CRPS', url: 'https://www.nhs.uk/conditions/complex-regional-pain-syndrome/' },
+          ],
+      },
+      UNKNOWN: {
+          Rehabilitation: [
+              { title: '질병관리청 희귀질환정보 헬프라인', url: 'https://helpline.kdca.go.kr/cdchelp/ph/rdiz/selectRdizInfDetail.do?menu=A0100&rdizCd=RA201810574' },
+              { title: '서울아산병원 질환백과', url: 'https://www.amc.seoul.kr/asan/healthinfo/disease/diseaseDetail.do?contentId=31733' },
+              { title: 'NHS CRPS', url: 'https://www.nhs.uk/conditions/complex-regional-pain-syndrome/' },
+              { title: 'MedlinePlus CRPS', url: 'https://medlineplus.gov/complexregionalpainsyndrome.html' },
+          ],
+          Medication: [
+              { title: '서울대학교병원 의학정보', url: 'https://www.snuh.org/health/nMedInfo/nView.do?category=DIS&medid=AA000252' },
+              { title: '삼성서울병원 질환정보', url: 'http://www.samsunghospital.com/home/hbv/disease/info/view.do?CONT_ID=1325&CONT_SRC_ID=09a4727a8000f24a&CONT_SRC=CMS&CONT_CLS_CD=001020001' },
+              { title: 'MedlinePlus CRPS', url: 'https://medlineplus.gov/complexregionalpainsyndrome.html' },
+              { title: 'AAPM&R CRPS Treatment', url: 'https://now.aapmr.org/complex-regional-pain-syndrome-part-2-management-and-treatment/' },
+          ],
+          Procedure: [
+              { title: '질병관리청 희귀질환정보 헬프라인', url: 'https://helpline.kdca.go.kr/cdchelp/ph/rdiz/selectRdizInfDetail.do?menu=A0100&rdizCd=RA201810574' },
+              { title: '서울대학교병원 의학정보', url: 'https://www.snuh.org/health/nMedInfo/nView.do?category=DIS&medid=AA000252' },
+              { title: 'NIH/NINDS CRPS', url: 'https://www.ninds.nih.gov/health-information/disorders/complex-regional-pain-syndrome' },
+              { title: 'RCP CRPS Guideline', url: 'https://www.rcplondon.ac.uk/improving-care/resources/complex-regional-pain-syndrome-in-adults-2nd-edition/' },
+          ],
+          default: [
+              { title: '질병관리청 희귀질환정보 헬프라인', url: 'https://helpline.kdca.go.kr/cdchelp/ph/rdiz/selectRdizInfDetail.do?menu=A0100&rdizCd=RA201810574' },
+              { title: '서울대학교병원 의학정보', url: 'https://www.snuh.org/health/nMedInfo/nView.do?category=DIS&medid=AA000252' },
+              { title: 'NHS CRPS', url: 'https://www.nhs.uk/conditions/complex-regional-pain-syndrome/' },
+              { title: 'MedlinePlus CRPS', url: 'https://medlineplus.gov/complexregionalpainsyndrome.html' },
+          ],
+      },
   };
 
   const toggleEvidenceLinks = (id: string) => {
@@ -208,7 +267,7 @@ const sortedTreatments = [...treatmentsForType].sort((a, b) => {
               ${activeTab === 'FAQ' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'}`}
           >
             <MessageSquare size={16} className="md:w-5 md:h-5" /> 
-            <span>상세 FAQ</span>
+            <span>{'\uC758\uD559\uC801 \uADFC\uAC70 \uBCF4\uAE30'}</span>
             {activeTab !== 'FAQ' && (
                 <span className="bg-indigo-100 text-indigo-700 text-[10px] px-1.5 py-0.5 rounded-full border border-indigo-200 ml-1 whitespace-nowrap hidden sm:inline-block">AI Chat</span>
             )}
@@ -382,20 +441,20 @@ const sortedTreatments = [...treatmentsForType].sort((a, b) => {
                                 className="flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs md:text-sm text-slate-600 hover:text-blue-600 hover:border-blue-300 transition-colors w-full sm:w-auto"
                             >
                                 <FileText size={14} />
-                                <span>View evidence</span>
+                                <span>{'\uC758\uD559\uC801 \uADFC\uAC70 \uBCF4\uAE30'}</span>
                                 <ExternalLink size={12} />
                             </button>
                         </div>
 
                         {evidenceOpenId === option.id && (
                             <div className="mt-3 bg-white border border-slate-200 rounded-lg p-3 text-xs md:text-sm text-slate-700 space-y-2">
-                                <p className="font-bold text-slate-700">Evidence links</p>
+                                <p className="font-bold text-slate-700">{'\uADFC\uAC70 \uB9C1\uD06C'}</p>
                                 <div className="flex flex-col gap-2">
-                                    {(getEvidenceLinks(option.title).length > 0 ? getEvidenceLinks(option.title) : getFallbackEvidenceLinks()).map((entry, i) => (
-                                            <a
-                                                key={`${option.id}-rag-${i}`}
-                                                href={entry.url}
-                                                target="_blank"
+                                    {(EVIDENCE_LINKS_BY_TYPE[activeType]?.[option.category] || EVIDENCE_LINKS_BY_TYPE[activeType]?.default || []).map((entry, i) => (
+                                        <a
+                                            key={`${option.id}-rag-${i}`}
+                                            href={entry.url}
+                                            target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="flex items-center gap-2 text-blue-600 hover:underline break-all"
                                             >
